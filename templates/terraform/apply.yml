@@ -6,11 +6,19 @@ needs: plan
 steps:
   - name: Checkout
     uses: actions/checkout@v2
-  - name: Terraform Init
-    run: terraform init
+    
+  - id: tf-init
+    name: Terraform init
+    run: |
+      terraform init -no-color
+      
   - name: Download Plan
     uses: actions/download-artifact@v2
     with:
       name: tfplan
-  - name: Terraform Apply
-    run: terraform apply tfplan
+      
+  - id: tf-apply
+    if: github.event.pull_request.merged == true && success()
+    name: Terraform apply
+    run: |
+      terraform apply -input=false -auto-approve -no-color ../plan.out
