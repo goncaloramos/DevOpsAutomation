@@ -1,24 +1,26 @@
 # plan.yml
 name: Terraform Plan
 description: 'Terraform plan description'
-runs-on: ubuntu-latest
 inputs:
   environment:
     description: 'Environment to deploy to'
     required: true
-steps:
+runs:
+  using: "composite"
+  steps:
   - name: Checkout
     uses: actions/checkout@v2
-    
+
   - id: gcp-sdk
     name: Set up Cloud SDK
     uses: google-github-actions/setup-gcloud@v0
     with:
       install_components: alpha
 
-      # copy provider and tfvars files
   - id: tf-config
+    # copy provider and tfvars files
     name: Copy Terraform output files
+    shell: bash
     run: |
       gcloud alpha storage cp -r \
         "gs://$${{env.FAST_OUTPUTS_BUCKET}}/providers/$${{env.TF_PROVIDERS_FILE}}" ./
@@ -37,18 +39,22 @@ steps:
   # run Terraform init/validate/plan
   - id: tf-init
     name: Terraform init
+    shell: bash
     run: |
       terraform init -no-color
 
   - id: tf-validate
     name: Terraform Validate
+    shell: bash
     run: terraform validate -no-color
-       
+
   - name: Terraform Plan
+    shell: bash
     run: terraform plan -input=false -var-file=${{ inputs.environment }} -out=tfplan
-    
+
   - name: Save Plan
     uses: actions/upload-artifact@v2
     with:
       name: tfplan
       path: ./tfplan
+

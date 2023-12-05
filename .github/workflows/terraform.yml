@@ -1,0 +1,34 @@
+# workflow.yml
+name: Terraform Plan and Apply
+on:
+  push:
+    branches:
+    - main
+jobs:
+  plan-dev:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    steps:
+    - uses: ./.github/actions/plan
+      with:
+        environment: 'dev'
+  apply-dev:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: plan-dev
+    steps:
+    - uses: ./.github/actions/apply
+  plan-prod:
+    name: Terraform Plan
+    runs-on: ubuntu-latest
+    needs: apply-dev
+    steps:
+    - uses: ./.github/actions/plan
+      with:
+        environment: 'prod'
+  apply-prod:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    needs: plan-prod
+    steps:
+    - uses: ./.github/actions/apply
