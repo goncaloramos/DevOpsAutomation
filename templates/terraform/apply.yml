@@ -18,7 +18,6 @@ steps:
       name: tfplan
       
   - id: tf-apply
-    if: github.event.pull_request.merged == true && success()
     name: Terraform apply
     run: |
       terraform apply -input=false -auto-approve -no-color ../plan.out
